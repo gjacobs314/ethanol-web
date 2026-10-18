@@ -7,36 +7,65 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Ethanol</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon.png">
   <style>
     :root {
-      --bg: #0f1115;
-      --card: #1a1d24;
+      --bg: #0b0d11;
+      --card: #161920;
       --accent: #00d4aa;
-      --text: #e8eaed;
-      --muted: #8b909a;
-      --danger: #ff5a5a;
-      --radius: 16px;
+      --text: #f0f2f5;
+      --muted: #8a919d;
+      --border: #252a33;
+      --radius: 18px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 16px 40px;
-      padding-top: env(safe-area-inset-top);
+      padding: 16px;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
     }
-    h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-    .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.3px; }
+    .tabs {
+      display: flex;
+      background: var(--card);
+      border-radius: 14px;
+      padding: 4px;
+      margin-bottom: 20px;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: var(--accent);
+      color: #000;
+    }
+    .panel { display: none; max-width: 420px; margin: 0 auto; }
+    .panel.active { display: block; }
+
+    /* Readout */
     .gauge-wrap {
       position: relative;
-      width: 220px;
-      height: 220px;
-      margin: 10px 0 20px;
+      width: 240px;
+      height: 240px;
+      margin: 10px auto 24px;
     }
     canvas { width: 100%; height: 100%; }
     .gauge-value {
@@ -45,110 +74,140 @@
       transform: translate(-50%, -50%);
       text-align: center;
     }
-    .gauge-value .pct { font-size: 48px; font-weight: 700; color: var(--accent); }
-    .gauge-value .unit { font-size: 16px; color: var(--muted); }
+    .gauge-value .pct { font-size: 56px; font-weight: 700; color: var(--accent); line-height: 1; }
+    .gauge-value .unit { font-size: 18px; color: var(--muted); margin-top: 2px; }
     .temp-card {
       background: var(--card);
       border-radius: var(--radius);
-      padding: 16px 24px;
-      margin: 12px 0;
-      font-size: 22px;
-      font-weight: 600;
-      min-width: 180px;
+      padding: 18px;
       text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 20px;
     }
+    .controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     button {
       background: var(--accent);
       color: #000;
       border: none;
-      border-radius: 30px;
-      padding: 14px 32px;
-      font-size: 17px;
+      border-radius: 28px;
+      padding: 14px 28px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      margin: 8px 0;
-      transition: opacity 0.2s;
     }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    button.secondary { background: #2a2e38; color: var(--text); }
-    .status { color: var(--muted); font-size: 14px; margin: 8px 0 16px; min-height: 20px; }
-    .section {
-      width: 100%;
-      max-width: 420px;
+    button.secondary { background: #252a33; color: var(--text); }
+    button:disabled { opacity: 0.55; }
+    .status {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 12px;
+      min-height: 20px;
+    }
+
+    /* Calculator */
+    .form {
       background: var(--card);
       border-radius: var(--radius);
       padding: 20px;
-      margin-top: 24px;
     }
-    .section h2 { font-size: 18px; margin-bottom: 12px; }
-    label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
-    input {
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 14px 0 6px;
+    }
+    label:first-child { margin-top: 0; }
+    input[type="number"] {
       width: 100%;
-      background: #12141a;
-      border: 1px solid #2a2e38;
-      border-radius: 10px;
-      padding: 12px;
+      background: #0f1115;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
       color: var(--text);
       font-size: 16px;
     }
-    .result { margin-top: 16px; font-size: 15px; line-height: 1.5; }
-    .result strong { color: var(--accent); }
-    .toggle { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; }
-    .ios-note {
-      background: #1e222b;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: var(--muted);
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
+    .result {
       margin-top: 20px;
-      max-width: 420px;
+      background: #0f1115;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .result strong { color: var(--accent); }
+    .ios-note {
       text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 28px;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .ios-note a { color: var(--accent); text-decoration: none; }
   </style>
 </head>
 <body>
-  <h1>Ethanol</h1>
-  <p class="subtitle">Fuel sensor & blend calculator</p>
+  <header>
+    <h1>Ethanol</h1>
+  </header>
 
-  <div class="gauge-wrap">
-    <canvas id="gauge" width="220" height="220"></canvas>
-    <div class="gauge-value">
-      <div class="pct" id="ethanolPct">--</div>
-      <div class="unit">%</div>
-    </div>
+  <div class="tabs">
+    <div class="tab active" data-tab="readout">Readout</div>
+    <div class="tab" data-tab="calc">Calculator</div>
   </div>
 
-  <div class="temp-card" id="tempDisplay">-- °F</div>
-
-  <button id="connectBtn">Connect to Sensor</button>
-  <div class="status" id="status">Not connected</div>
-  <button class="secondary" id="unitToggle">°F / °C</button>
-
-  <div class="section">
-    <h2>Blend Calculator</h2>
-    <label>Tank capacity</label>
-    <input type="number" id="tankCap" value="16.9" step="0.1">
-    <div class="toggle">
-      <input type="checkbox" id="useLiters">
-      <label for="useLiters" style="margin:0">Use liters</label>
+  <!-- Readout panel -->
+  <div id="readout" class="panel active">
+    <div class="gauge-wrap">
+      <canvas id="gauge" width="240" height="240"></canvas>
+      <div class="gauge-value">
+        <div class="pct" id="ethanolPct">--</div>
+        <div class="unit">%</div>
+      </div>
     </div>
-    <label>Current fuel level (%)</label>
-    <input type="number" id="fuelLevel" value="50" step="1">
-    <label>Current ethanol (%)</label>
-    <input type="number" id="currentE" value="10" step="0.1">
-    <label>Desired ethanol (%)</label>
-    <input type="number" id="desiredE" value="40" step="0.1">
-    <label>Pump gas ethanol (%)</label>
-    <input type="number" id="gasE" value="10" step="0.1">
-    <label>E85 ethanol (%)</label>
-    <input type="number" id="e85E" value="85" step="0.1">
-    <div class="result" id="calcResult">Enter values and connect or edit to calculate.</div>
+    <div class="temp-card" id="tempDisplay">-- °F</div>
+    <div class="controls">
+      <button id="connectBtn">Connect</button>
+      <button class="secondary" id="unitToggle">°F / °C</button>
+    </div>
+    <div class="status" id="status">Not connected</div>
+  </div>
+
+  <!-- Calculator panel -->
+  <div id="calc" class="panel">
+    <div class="form">
+      <label>Tank capacity</label>
+      <input type="number" id="tankCap" value="16.9" step="0.1">
+      <div class="row">
+        <input type="checkbox" id="useLiters">
+        <label for="useLiters" style="margin:0">Use liters</label>
+      </div>
+      <label>Current fuel level (%)</label>
+      <input type="number" id="fuelLevel" value="50" step="1">
+      <label>Current ethanol (%)</label>
+      <input type="number" id="currentE" value="10" step="0.1">
+      <label>Desired ethanol (%)</label>
+      <input type="number" id="desiredE" value="40" step="0.1">
+      <label>Pump gas ethanol (%)</label>
+      <input type="number" id="gasE" value="10" step="0.1">
+      <label>E85 ethanol (%)</label>
+      <input type="number" id="e85E" value="85" step="0.1">
+      <div class="result" id="calcResult">Enter values to calculate.</div>
+    </div>
   </div>
 
   <div class="ios-note">
-    On iPhone Safari, install the free <a href="https://apps.apple.com/app/beacio/id6761301368" target="_blank">beacio</a> extension to enable Bluetooth.<br>
-    Then enable it for this site.
+    On iPhone, install free <a href="https://apps.apple.com/app/beacio/id6761301368" target="_blank">beacio</a> and enable it for Bluetooth.
   </div>
 
   <script>
@@ -160,6 +219,16 @@
     let currentEthanol = null;
     let lastTempF = null, lastTempC = null;
 
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
     const connectBtn = document.getElementById('connectBtn');
     const statusEl = document.getElementById('status');
     const ethanolPct = document.getElementById('ethanolPct');
@@ -170,22 +239,20 @@
 
     function drawGauge(pct) {
       const c = canvas.width / 2;
-      const r = 90;
+      const r = 100;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // track
       ctx.beginPath();
       ctx.arc(c, c, r, 0.75 * Math.PI, 2.25 * Math.PI);
-      ctx.strokeStyle = '#2a2e38';
-      ctx.lineWidth = 14;
+      ctx.strokeStyle = '#252a33';
+      ctx.lineWidth = 16;
       ctx.lineCap = 'round';
       ctx.stroke();
-      // value
       if (pct != null) {
         const end = 0.75 * Math.PI + (1.5 * Math.PI * (pct / 100));
         ctx.beginPath();
         ctx.arc(c, c, r, 0.75 * Math.PI, end);
         ctx.strokeStyle = '#00d4aa';
-        ctx.lineWidth = 14;
+        ctx.lineWidth = 16;
         ctx.lineCap = 'round';
         ctx.stroke();
       }
@@ -216,7 +283,7 @@
 
     async function connect() {
       if (!navigator.bluetooth) {
-        statusEl.textContent = 'Web Bluetooth not available. On iPhone, install beacio extension.';
+        statusEl.textContent = 'Web Bluetooth not available. On iPhone, install beacio.';
         return;
       }
       try {
@@ -248,27 +315,22 @@
 
     function onData(event) {
       const value = event.target.value;
-      const decoder = new TextDecoder('utf-8');
-      const text = decoder.decode(value).trim();
+      const text = new TextDecoder('utf-8').decode(value).trim();
       const parts = text.split(',');
       if (parts.length >= 3) {
-        const eth = parseInt(parts[0], 10);
-        const f = parseInt(parts[1], 10);
-        const c = parseInt(parts[2], 10);
-        updateUI(eth, f, c);
+        updateUI(parseInt(parts[0], 10), parseInt(parts[1], 10), parseInt(parts[2], 10));
       }
     }
 
     function onDisconnect() {
       connectBtn.disabled = false;
-      connectBtn.textContent = 'Connect to Sensor';
+      connectBtn.textContent = 'Connect';
       statusEl.textContent = 'Disconnected';
       updateUI(null, null, null);
     }
 
     connectBtn.addEventListener('click', connect);
 
-    // Calculator
     function calculate() {
       let tank = parseFloat(document.getElementById('tankCap').value) || 16.9;
       const useLiters = document.getElementById('useLiters').checked;
