@@ -45,9 +45,9 @@
     .tab {
       flex: 1;
       text-align: center;
-      padding: 10px;
+      padding: 10px 6px;
       border-radius: 10px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--muted);
       cursor: pointer;
@@ -144,16 +144,24 @@
       line-height: 1.6;
     }
     .result strong { color: var(--accent); }
-    .ios-note {
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 28px;
-      max-width: 420px;
-      margin-left: auto;
-      margin-right: auto;
+
+    /* About */
+    .about {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--text);
     }
-    .ios-note a { color: var(--accent); text-decoration: none; }
+    .about h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .about p { margin-bottom: 12px; }
+    .about a { color: var(--accent); text-decoration: none; }
+    .about ul { margin: 8px 0 12px 18px; }
+    .about li { margin-bottom: 6px; }
   </style>
 </head>
 <body>
@@ -164,6 +172,7 @@
   <div class="tabs">
     <div class="tab active" data-tab="readout">Readout</div>
     <div class="tab" data-tab="calc">Calculator</div>
+    <div class="tab" data-tab="about">About</div>
   </div>
 
   <!-- Readout panel -->
@@ -206,8 +215,21 @@
     </div>
   </div>
 
-  <div class="ios-note">
-    On iPhone, install free <a href="https://apps.apple.com/app/beacio/id6761301368" target="_blank">beacio</a> and enable it for Bluetooth.
+  <!-- About panel -->
+  <div id="about" class="panel">
+    <div class="about">
+      <h2>About</h2>
+      <p>Browser version of the Ethanol fuel sensor app. Connects to the same Bluetooth device as the original iOS app.</p>
+      <h2>Using on iPhone</h2>
+      <p>Safari does not support Web Bluetooth natively. To connect from this site:</p>
+      <ul>
+        <li>Install the free <a href="https://apps.apple.com/app/beacio/id6761301368" target="_blank">beacio</a> Safari extension.</li>
+        <li>Enable it in Safari (page menu → Manage Extensions) and allow it on all websites.</li>
+        <li>Return here and tap Connect.</li>
+      </ul>
+      <p>Alternatively, use a dedicated browser that supports Web Bluetooth (Bluetooth Browser, WebBLE, or Bluefy).</p>
+      <p>On Android or desktop Chrome/Edge it works without any extra apps.</p>
+    </div>
   </div>
 
   <script>
@@ -283,7 +305,7 @@
 
     async function connect() {
       if (!navigator.bluetooth) {
-        statusEl.textContent = 'Web Bluetooth not available. On iPhone, install beacio.';
+        statusEl.textContent = 'Web Bluetooth not available. See About tab.';
         return;
       }
       try {
